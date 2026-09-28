@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "山洪预警闭环处置持久化状态",
+  "type": "object",
+  "required": [
+    "seq",
+    "clock",
+    "actors",
+    "observations",
+    "warnings",
+    "transfer_ledger",
+    "notifications",
+    "todos",
+    "reviews",
+    "audit"
+  ],
+  "properties": {
+    "seq": { "type": "integer", "minimum": 0 },
+    "clock": {
+      "type": "object",
+      "required": ["now"],
+      "properties": {
+        "now": { "type": "string" },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [{ "type": "string" }, { "type": "string" }],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      }
+    },
+    "actors": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["id", "name", "role", "region"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "role": {
+            "enum": [
+              "commander",
+              "hydrologist",
+              "grid_worker",
+              "superior",
+              "county_duty",
+              "city_duty",
+              "province_duty"
+            ]
+          },
+          "region": { "type": "string" }
+        }
+      }
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "region",
+          "kind",
+          "value",
+          "unit",
+          "observed_at",
+          "source",
+          "recorded_at",
+          "recorded_by"
+        ]
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "region",
+          "level",
+          "valid_from",
+          "valid_until",
+          "basis",
+          "status",
+          "issued_by",
+          "issued_at",
+          "escalation_level",
+          "confirm_deadline",
+          "revision_suggestions"
+        ],
+        "properties": {
+          "level": { "enum": ["blue", "yellow", "orange", "red"] },
+          "status": { "enum": ["issued", "confirmed", "released", "expired"] },
+          "basis": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["observation_id", "kind", "value", "unit", "observed_at", "source"]
+            }
+          }
+        }
+      }
+    },
+    "transfer_ledger": {
+      "type": "object",
+      "required": ["tasks", "groups"],
+      "properties": {
+        "tasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "warning_id",
+              "region",
+              "target_count",
+              "counted_persons",
+              "group_id",
+              "status"
+            ],
+            "properties": {
+              "status": { "enum": ["open", "completed"] }
+            }
+          }
+        },
+        "groups": { "type": "object" }
+      }
+    },
+    "notifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "channel", "actor_id", "warning_id", "status", "attempts"],
+        "properties": {
+          "channel": { "enum": ["sms", "phone"] },
+          "status": { "enum": ["pending", "sent", "failed"] }
+        }
+      }
+    },
+    "todos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "target", "region", "summary", "status"],
+        "properties": {
+          "kind": {
+            "enum": ["notification_failed", "transfer_overdue", "review_overdue"]
+          },
+          "status": { "enum": ["open", "closed"] }
+        }
+      }
+    },
+    "reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "warning_id", "region", "reason", "status", "created_at", "due_at"],
+        "properties": {
+          "reason": { "enum": ["released", "expired"] },
+          "status": { "enum": ["open", "completed"] }
+        }
+      }
+    },
+    "audit": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "at", "actor_id", "action", "target", "detail"]
+      }
+    }
+  }
+}
